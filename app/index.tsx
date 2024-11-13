@@ -5,13 +5,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 
 export default function TabTwoScreen() {
   const [tasks, setTasks] = useState([]);
   const [taskText, setTaskText] = useState('');
 
-  // Charger les tâches depuis AsyncStorage au démarrage
   useEffect(() => {
     const loadTasks = async () => {
       const storedTasks = await AsyncStorage.getItem('tasks');
@@ -22,7 +20,6 @@ export default function TabTwoScreen() {
     loadTasks();
   }, []);
 
-  // Sauvegarder les tâches dans AsyncStorage à chaque modification
   const saveTasks = async (updatedTasks) => {
     try {
       await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
@@ -31,7 +28,6 @@ export default function TabTwoScreen() {
     }
   };
 
-  // Fonction pour ajouter une tâche
   const addTask = () => {
     if (taskText.trim()) {
       const newTasks = [...tasks, { id: Date.now().toString(), text: taskText, completed: false }];
@@ -44,7 +40,6 @@ export default function TabTwoScreen() {
     }
   };
 
-  // Fonction pour marquer une tâche comme complétée
   const toggleTaskCompleted = (taskId) => {
     const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, completed: !task.completed } : task
@@ -53,7 +48,6 @@ export default function TabTwoScreen() {
     saveTasks(updatedTasks);
   };
 
-  // Fonction pour supprimer une tâche avec confirmation
   const confirmDeleteTask = (taskId) => {
     Alert.alert(
       'Confirmation',
@@ -73,14 +67,11 @@ export default function TabTwoScreen() {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#000000', dark: '#ffffff' }}
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title" style={{ light: '#000000', dark: '#ffffff' }}>Ma To-Do Liste</ThemedText>
-      </ThemedView>
+    <ThemedView style={{ flex: 1 }}>
+      <View style={styles.header}>
+        <ThemedText type="title" style={styles.headerText}>Ma To-Do Liste</ThemedText>
+      </View>
 
-      {/* Zone de saisie pour ajouter une tâche */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -89,59 +80,53 @@ export default function TabTwoScreen() {
           value={taskText}
           onChangeText={setTaskText}
         />
-      </View>
-      <TouchableOpacity style={styles.addButton} onPress={addTask}>
-        <ThemedText style={{ color: '#FFF' }}>Ajouter</ThemedText>
+        <TouchableOpacity style={styles.addButton} onPress={addTask}>
+          <Ionicons name="add-circle-outline" size={24} color="#FFF" />
         </TouchableOpacity>
-      <ThemedText style={{ light: '#000000', dark: '#ffffff' }}>Mes Tâches</ThemedText>
-      {/* Liste des tâches */}
-        <FlatList
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.taskContainer}>
-              <TouchableOpacity
-                style={[styles.taskButton, item.completed && styles.completedButton]}
-                onPress={() => toggleTaskCompleted(item.id)}
-                onLongPress={() => confirmDeleteTask(item.id)}
-              >
-                <ThemedText style={[styles.taskText, item.completed && styles.completedText]}>
-                  {item.text}
-                </ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => confirmDeleteTask(item.id)}>
-                <Ionicons name="trash-outline" size={24} color="#FF6347" />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-    </ParallaxScrollView>
+      </View>
+
+      <ThemedText style={styles.taskListTitle}>Mes Tâches</ThemedText>
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.taskContainer}>
+            <TouchableOpacity
+              style={[styles.taskButton, item.completed && styles.completedButton]}
+              onPress={() => toggleTaskCompleted(item.id)}
+              onLongPress={() => confirmDeleteTask(item.id)}
+            >
+              <ThemedText style={[styles.taskText, item.completed && styles.completedText]}>
+                {item.text}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => confirmDeleteTask(item.id)}>
+              <Ionicons name="trash-outline" size={24} color="#FF6347" />
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  reactLogo: {
-    flex: 1,
+  header: {
+    backgroundColor: '#000000',
+    padding: 20,
     width: '100%',
-    height: '100%',
-    display: 'flex',
-    alignSelf: 'center',
+    height: '20%',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 10,
-    justifyContent: 'start',
-  },
-  titleText: {
-    fontSize: 28,
+  headerText: {
+    color: '#ffffff',
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#4A4A4A',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -149,8 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: '#ddd',
-    padding: 8,
-    marginRight: 10,
+    padding: 10,
     borderRadius: 5,
     backgroundColor: '#F9F9F9',
     fontSize: 16,
@@ -159,16 +143,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     padding: 10,
     borderRadius: 5,
-    alignSelf: 'center',
-    width: '100%',
+    marginLeft: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  taskListTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    padding: 20,
+    color: '#333',
   },
   taskContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: 'transparent',
-    margin: 3,
+    padding: 20,
+    backgroundColor: '#FFF',
+    marginVertical: 5,
+    marginHorizontal: 20,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
     justifyContent: 'space-between',
   },
   taskButton: {
